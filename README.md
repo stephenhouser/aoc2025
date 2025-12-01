@@ -2,7 +2,7 @@
 
 | Day | Part 1 | Part 2 | Title |
 |---:|:-----:|:-----:|:-----|
-| 1  |    |    |    |
+| 1  |  ⭐ | 🌟 | [Day 1: Secret Entrance](https://adventofcode.com/2025/day/1) |
 | 2  |    |    |    |
 | 3  |    |    |    |
 | 4  |    |    |    |
