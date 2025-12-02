@@ -1,3 +1,8 @@
+/* 2025 Advent of Code - Day 2
+ *
+ * Stephen Houser <stephenhouser@gmail.com>
+ * All rights reserved.
+ */
 #include <getopt.h>	 // getopt
 
 #include <algorithm>  // sort
