@@ -35,27 +35,31 @@ const data_t read_data(const string& filename) {
 	return data;
 }
 
-/* Return position of largest digit in string between start and end pos */
+/* Return index of largest digit in string (s) between start and end positions */
 size_t largest_digit(const string& s, size_t start, size_t end) {
-	size_t pos = start;
-	for (size_t p = pos; p < end; p++) {
-		if (s[p] > s[pos]) {
-			pos = p;
+	assert(start < end);		// end is after start
+	assert(end <= s.size());	// end is not beyond the end of the string
+
+	size_t largest_idx = start;	// assume first is largest
+	for (size_t i = start + 1; i < end; i++) {
+		if (s[i] > s[largest_idx]) {
+			largest_idx = i;
 		}
 	}
 
-	return pos;
+	return largest_idx;
 }
 
+/* Return the largest joltage with the correct number of digits. */
 size_t largest_joltage(const string&battery, const size_t digits) {
 	size_t joltage = 0;
 	size_t start = 0;
 
 	size_t last_pos = battery.size() - (digits - 1);
 	for (size_t end = last_pos; end <= battery.size(); end++) {
-		auto pos = largest_digit(battery, start, end);
-		joltage = (joltage * 10) + (size_t)battery[pos] - '0';
-		start = pos + 1;
+		auto digit_idx = largest_digit(battery, start, end);
+		joltage = (joltage * 10) + (size_t)battery[digit_idx] - '0';
+		start = digit_idx + 1;
 	}
 
 	return joltage;
@@ -63,6 +67,7 @@ size_t largest_joltage(const string&battery, const size_t digits) {
 
 /* Part 1 */
 result_t part1(const data_t& data) {
+	/* Accumulate largest 2 digit joltages */
 	auto two_digit_joltage = [](result_t a, const string& battery) {
 		return a + largest_joltage(battery, 2);
 	};
@@ -72,6 +77,7 @@ result_t part1(const data_t& data) {
 }
 
 result_t part2(const data_t& data) {
+	/* Accumulate largest 12 digit joltages */
 	auto twelve_digit_joltage = [](result_t a, const string& battery) {
 		return a + largest_joltage(battery, 12);
 	};
