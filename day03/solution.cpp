@@ -1,23 +1,14 @@
-/* 2025 Advent of Code - Day 2
- *
- * Stephen Houser <stephenhouser@gmail.com>
- * All rights reserved.
- */
-#include <getopt.h>	 	// getopt
+#include <getopt.h>	 // getopt
 
-#include <algorithm>  	// sort
-#include <cassert>	  	// assert macro
-#include <chrono>	  	// high resolution timer
-#include <cstring>	  	// strtok, strdup
-#include <fstream>	  	// ifstream (reading file)
-#include <numeric>	  	// max, reduce, etc.
-#include <print>		// formatted print
-#include <ranges>  		// ranges and views
-#include <string>  		// strings
-#include <vector>  		// collection
-
-#include "mrf.h"	// map, reduce, filter templates
-#include "split.h"	// split strings
+#include <cassert>	  // assert macro
+#include <chrono>	  // high resolution timer
+#include <cstring>	  // strtok, strdup
+#include <fstream>	  // ifstream (reading file)
+#include <numeric>	  // max, reduce, etc.
+#include <print>
+#include <ranges>  // ranges and views
+#include <string>  // strings
+#include <vector>  // collection
 
 using namespace std;
 
@@ -44,13 +35,49 @@ const data_t read_data(const string& filename) {
 	return data;
 }
 
-/* Part 1 */
-result_t part1(const data_t& data) {
-	return data.size();
+/* Return position of largest digit in string between start and end pos */
+size_t largest_digit(const string& s, size_t start, size_t end) {
+	size_t pos = start;
+	for (size_t p = pos; p < end; p++) {
+		if (s[p] > s[pos]) {
+			pos = p;
+		}
+	}
+
+	return pos;
 }
 
-result_t part2([[maybe_unused]] const data_t& data) {
-	return 0;
+size_t largest_joltage(const string&battery, const size_t digits) {
+	size_t joltage = 0;
+	size_t start = 0;
+
+	size_t last_pos = battery.size() - (digits - 1);
+	for (size_t end = last_pos; end <= battery.size(); end++) {
+		auto pos = largest_digit(battery, start, end);
+		joltage = (joltage * 10) + (size_t)battery[pos] - '0';
+		start = pos + 1;
+	}
+
+	return joltage;
+}
+
+/* Part 1 */
+result_t part1(const data_t& data) {
+	auto two_digit_joltage = [](result_t a, const string& battery) {
+		return a + largest_joltage(battery, 2);
+	};
+
+	result_t result = accumulate(data.begin(), data.end(), 0ul, two_digit_joltage);
+	return result;
+}
+
+result_t part2(const data_t& data) {
+	auto twelve_digit_joltage = [](result_t a, const string& battery) {
+		return a + largest_joltage(battery, 12);
+	};
+
+	result_t result = accumulate(data.begin(), data.end(), 0ul, twelve_digit_joltage);
+	return result;
 }
 
 int main(int argc, char* argv[]) {
