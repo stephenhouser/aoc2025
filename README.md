@@ -5,7 +5,7 @@
 | 1  | ⭐ | 🌟 | [Day 1: Secret Entrance](https://adventofcode.com/2025/day/1) |
 | 2  | ⭐ | 🌟 | [Day 2: Gift Shop](https://adventofcode.com/2025/day/2) |
 | 3  | ⭐ | 🌟 | [Day 3: Lobby](https://adventofcode.com/2025/day/3) |
-| 4  |    |    |    |
+| 4  | ⭐ | 🌟 | [Day 4: Printing Department](https://adventofcode.com/2025/day/3) |
 | 5  |    |    |    |
 | 6  |    |    |    |
 | 7  |    |    |    |
