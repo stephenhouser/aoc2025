@@ -141,7 +141,11 @@ struct charmap_t {
 			   std::views::join;
 	}
 
-	std::vector<point_t> _directions{{0, -1}, {1, 0}, {0, 1}, {-1, 0}};
+	// std::vector<point_t> _directions{{0, -1}, {1, 0}, {0, 1}, {-1, 0}};
+	std::vector<point_t> _directions{
+			{-1, -1}, { 0, -1}, { 1, -1},
+			{-1,  0},           { 1,  0},
+			{-1,  1}, { 0,  1}, { 1,  1}};  
 	auto neighbors_of(const point_t& p) const {
 		return _directions |
 			   std::views::filter([this, &p](const point_t& direction) {
@@ -165,6 +169,21 @@ struct charmap_t {
 						  });
 			   }) |
 			   std::views::join;
+	}
+
+	auto all_points(const char ch) const {
+		return std::views::iota(0u, data.size()) 
+			 | std::views::transform([this](size_t y) {
+				   return std::views::iota(0u, this->data[y].size()) |
+						  std::views::transform([this, y](size_t x) {
+							  point_t p(x, y);
+							  p.w = this->data[y][x];
+							  return p;
+							  // return std::pair<point_t, char>({x, y}, this->data[y][x]);
+						  });
+			   })
+			 | std::views::join
+			 | std::views::filter([ch](const auto& p) { return p.w == ch; });
 	}
 
 	/* Iterate/Enumerate over all the points in the map

@@ -16,13 +16,12 @@
 #include <string>  		// strings
 #include <vector>  		// collection
 
-#include "mrf.h"	// map, reduce, filter templates
-#include "split.h"	// split strings
+#include "charmap.h"
 
 using namespace std;
 
 /* Update with data type and result types */
-using data_t = vector<string>;
+using data_t = charmap_t;
 using result_t = size_t;
 
 /* for pretty printing durations */
@@ -30,27 +29,67 @@ using duration_t = chrono::duration<double, milli>;
 
 /* Read the data file... */
 const data_t read_data(const string& filename) {
-	data_t data;
+	return charmap_t::from_file(filename);
+}
 
-	std::ifstream ifs(filename);
+const auto accessible_bales(const data_t& data) {
+	/* Can the given location be accessed by the forklift?
+	 * Does it have fewer than four (4) neighboring rolls of paper '@'?
+	 */
+	const auto can_access = [&data](const point_t& p) {
+		auto n =  ranges::count_if(data.neighbors_of(p), [](const auto &pr) { return pr.second == '@'; });
+		return n < 4;
+	};
 
-	string line;
-	while (getline(ifs, line)) {
-		if (!line.empty()) {
-			data.push_back(line);
-		}
+	/* Filter all the rolls of paper by which ones we can access. */
+	return data.all_points('@') | views::filter(can_access);
+}
+
+/* Part 1 
+* Result is the number of accessible paper rolls.
+* NOTE: filter view is not sized_range so need to use ::distance not size()
+*/
+result_t part1(const data_t& data) {
+	auto accessible = accessible_bales(data);
+	return (result_t)ranges::distance(accessible);
+}
+
+/* Utility to clear temporary 'x' where we removed a bale of paper */
+void clear_x(data_t& map) {
+	for (const auto& p : map.all_points('x')) {
+		map.set(p, '.');
+	}
+}
+
+/* Remove accessible bales of paper, update the map */
+result_t remove_bales(data_t& map) {
+	// return number of bales removed
+	auto accessible = accessible_bales(map);
+	auto removed =  (result_t)ranges::distance(accessible);
+
+	// need to realize the filter to a vector, otherwise it
+	// dynamically updates as we clear locations
+	for (const auto &p : accessible | ranges::to<vector<point_t>>()) {
+		map.set(p, 'x');
 	}
 
-	return data;
+	return removed;
 }
 
-/* Part 1 */
-result_t part1(const data_t& data) {
-	return data.size();
-}
+result_t part2(const data_t& data) {
+	result_t total_removed = 0;
 
-result_t part2([[maybe_unused]] const data_t& data) {
-	return 0;
+	data_t map = data;	// non-const version so we can update it
+	result_t removed = 0;
+	do {
+		removed = remove_bales(map);
+		// only need to clear when we are debugging, 'x' is not '@' so all is good
+		//clear_x(map);
+
+		total_removed += removed;
+	} while (removed != 0);
+
+	return total_removed;
 }
 
 int main(int argc, char* argv[]) {
