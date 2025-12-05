@@ -112,26 +112,22 @@ range_t merge(const range_t& r1, const range_t& r2) {
 }
 
 result_t part2(const data_t& data) {
-	// convert to a set of ranges
 	unordered_set<range_t, pairhash> check(data.first.begin(), data.first.end());
 
-	// vector<range_t> check(data.first.begin(), data.first.end());
-
+	// vector of non-overlapping ranges
 	vector<range_t> ranges;
+
+	// merge overlapping ranges into `ranges`
 	while (check.size()) {
 		auto r1 = *(check.begin());
 		check.extract(check.begin());
-		// print("Check {}-{}\n", r1.first, r1.second);
 
 		bool has_overlap = false;
 		for (const auto &r2 : check) {
 			if (overlaps(r1, r2)) {
 				has_overlap = true;
-				// print("\toverlaps {}-{}\n", r2.first, r2.second);
 				range_t merger = merge(r1, r2);
-				// print("\tmerged   {}-{}\n", m.first, m.second);
 				check.extract(r2);
-
 				check.insert(merger);
 				break;
 			}
@@ -142,10 +138,9 @@ result_t part2(const data_t& data) {
 		}
 	}
 
-	// print("Non-overlapping ranges:\n");
+	// sum of lengths of non-overlapping ranges.
 	result_t fresh_ids = 0;
 	for (const auto& r : ranges) {
-		// print("\t{},{}\n", r.first, r.second);
 		fresh_ids += r.second - r.first + 1;
 	}
 
