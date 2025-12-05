@@ -17,8 +17,7 @@
 #include <vector>  		// collection
 #include <unordered_set>
 
-#include "mrf.h"	// map, reduce, filter templates
-#include "split.h"	// split strings
+#include "split.h"
 
 using namespace std;
 
@@ -70,19 +69,6 @@ result_t part1(const data_t& data) {
 	const vector<range_t> ranges = data.first;
 	const vector<size_t> items = data.second;
 
-	// code version
-	// result_t fresh = 0;
-	// for (auto item : items) {
-	// 	for (const auto& range : ranges) {
-	// 		if (in_range(range, item)) {
-	// 			fresh++;
-	// 			break;
-	// 		}
-	// 	}
-	// }
-
-	// functional version
-
 	// partial function to apply a range to a number
 	// Returns true if the number is within the range (inclusive).
 	auto contains = [](const size_t n) {
@@ -126,8 +112,9 @@ result_t part2(const data_t& data) {
 		for (const auto &r2 : check) {
 			if (overlaps(r1, r2)) {
 				has_overlap = true;
-				range_t merger = merge(r1, r2);
 				check.extract(r2);
+
+				range_t merger = merge(r1, r2);
 				check.insert(merger);
 				break;
 			}
@@ -138,13 +125,12 @@ result_t part2(const data_t& data) {
 		}
 	}
 
-	// sum of lengths of non-overlapping ranges.
-	result_t fresh_ids = 0;
-	for (const auto& r : ranges) {
-		fresh_ids += r.second - r.first + 1;
-	}
+	// Count the number of items in all ranges (reduce)
+	result_t fresh = accumulate(ranges.begin(), ranges.end(), 0ul, [](auto a, const auto& r) {
+		return a + ((r.second - r.first) + 1);
+	});
 
-	return fresh_ids;
+	return fresh;
 }
 
 int main(int argc, char* argv[]) {
