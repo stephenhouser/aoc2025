@@ -25,24 +25,15 @@ using result_t = size_t;
 /* for pretty printing durations */
 using duration_t = chrono::duration<double, milli>;
 
-/* Read the data file... */
-const data_t read_data(const string& filename) {
-	data_t data;
 
-	std::ifstream ifs(filename);
-
-	vector<string> lines;
-
-	string line;
-	while (getline(ifs, line)) {
-		if (!line.empty()) {
-			lines.push_back(line);
-		}
-	}
-
-	// find column end positions
+/* Find column (like tab stops) where all lines have a space character. */
+vector<size_t> find_columns(const vector<string>& lines) {
 	vector<size_t> columns;
+
+	// first column starts at index 0.
 	columns.push_back(0);
+
+	// search for index where all lines have a space character
 	for (size_t i = 0; i < lines[0].size(); i++) {
 		bool is_col = true;
 		for (const string& line : lines) {
@@ -56,7 +47,16 @@ const data_t read_data(const string& filename) {
 			columns.push_back(i);
 		}	
 	}
+
+	// add end of line as last column marker.
 	columns.push_back(lines[0].size());
+
+	return columns;
+}
+
+/* Split the lines at column positions and return vector of column data. */
+data_t split_columns(const vector<string>& lines, const vector<size_t>& columns) {
+	data_t data;
 
 	for (size_t c = 0; c < columns.size()-1; c++) {
 		auto start = columns[c];
@@ -72,155 +72,111 @@ const data_t read_data(const string& filename) {
 		data.push_back(local);
 	}
 
-	// for (const auto& eq : data) {
-	// 	for (const auto& term : eq) {
-	// 		print("[{}] ", term);
-	// 	}
-	// 	print("\n");
-	// }
-
 	return data;
 }
 
+/* Read the data file... */
+const data_t read_data(const string& filename) {
+	vector<string> lines;
 
-// // Trim from start
-// inline string ltrim(const string &s) {
-// 	string t(s);
-//     t.erase(t.begin(), std::find_if(t.begin(), t.end(),
-//             std::not1(std::ptr_fun<int, int>(std::isspace))));
-//     return t;
-// }
+	std::ifstream ifs(filename);
 
-// // Trim from the end
-// inline string rtrim(const string &s) {
-// 	string t(s);
-//     t.erase(std::find_if(t.rbegin(), t.rend(),
-//             std::not1(std::ptr_fun<int, int>(std::isspace))).base(), t.end());
-//     return t;
-// }
+	string line;
+	while (getline(ifs, line)) {
+		if (!line.empty()) {
+			lines.push_back(line);
+		}
+	}
+
+	const vector<size_t> columns = find_columns(lines);
+	const data_t data = split_columns(lines, columns);
+	return data;
+}
 
 // Trim from both ends
-inline string trim(const string &src) {
+// using the below toul() instead
+// inline string trim(const string &src) {
+// 	size_t start = 0;
+// 	while (start < src.size() && isspace(src[start])) {
+// 		start++;
+// 	}
+
+// 	size_t end = src.size();
+// 	while (end != 0 && isspace(src[end])) {
+// 		end--;
+// 	}
+
+// 	string t = src.substr(start, end - start);
+//     return t;
+// }
+
+inline result_t toul(const string& src) {
+	// advanced past leading spaces
 	size_t start = 0;
 	while (start < src.size() && isspace(src[start])) {
 		start++;
 	}
 
-	size_t end = src.size();
-	while (end != 0 && isspace(src[end])) {
-		end--;
-	}
-
-	string t = src.substr(start, end - start);
-    return t;
+	return stoul(src.substr(start));
 }
-
-vector<vector<string>> transpose(const vector<vector<string>>& src) {
-	size_t rows = src.size();
-	size_t columns = src[0].size();
-
-	vector<vector<string>> dst;
-	for (size_t c = 0; c < columns; c++) {
-		vector<string> dst_row;
-		for (size_t r = 0; r < rows; r++) {
-			dst_row.push_back(src[r][c]);
-		}
-
-		dst.push_back(dst_row);
-	}
-
-	return dst;
-}
-
-result_t solver_p1(const vector<string>& eq) {
+ 
+/* Returns result of equation, + or * all the terms, based on operator in last element */
+result_t solve(const vector<string>& eq) {
 	char op = eq[eq.size()-1][0];
+	assert(op == '+' || op == '*');
 
-	size_t local = (op == '+') ? 0 : 1;
+	size_t result = (op == '+') ? 0 : 1;
 
 	for (size_t i = 0; i < eq.size() - 1; i++) {
-		string t = trim(eq[i]);
-		size_t value = stoul(trim(eq[i]));
-		local = (op == '+') ? (local + value): (local * value);
-	}
+		size_t value = toul(eq[i]);
 
-	return local;
-}
-
-/* Part 1 */
-result_t part1(const data_t& data) {
-
-	result_t result = 0;
-	for (auto& eq : data) {
-		const auto local = solver_p1(eq);
-		result += local;
+		result = (op == '+') ? (result + value) 
+							 : (result * value);
 	}
 
 	return result;
 }
 
-const vector<string> trans(const vector<string>& src) {
+/* Part 1 */
+result_t part1(const data_t& data) {
+	result_t result = accumulate(data.begin(), data.end(), 0ul, 
+		[](result_t a, const vector<string>& eq) {
+			return a + solve(eq);
+		}
+	);
+
+	return result;
+}
+
+/* Transpose equation for part 2 */
+const vector<string> transpose_eq(const vector<string>& src) {
 	size_t rows = src.size();
 	size_t columns = src[0].size();
 
 	vector<string> dst;
 	for (size_t c = 0; c < columns; c++) {
 		string dst_str;
-		for (size_t r = 0; r < rows; r++) {
+
+		// Don't transpose last row (that's where the +/* is)
+		// We will add it back in at the end...
+		for (size_t r = 0; r < rows - 1; r++) {
 			dst_str += src[r][c];
 		}
 
 		dst.push_back(dst_str);
 	}
 
+	// add the operation back at the end, un-transposed.
+	dst.push_back(src[src.size()-1]);
 	return dst;
 }
 
-result_t solver_p2(const vector<string>& eq) {
-	char op = eq[eq.size()-1][0];
-	size_t local = (op == '+') ? 0 : 1;
-
-	vector<string> neq = eq;
-	neq.pop_back();
-	vector<string> xp = trans(neq);
-
-	for (const auto& term : xp) {
-		print("[{}] ", term);
-	}
-
-	print("\n");
- 
-
-	for (size_t i = 0; i < xp.size(); i++) {
-		string t = trim(xp[i]);
-		size_t value = stoul(trim(xp[i]));
-		local = (op == '+') ? (local + value): (local * value);
-	}
-
-
-	// for (size_t i = 0; i < eq.size() - 1; i++) {
-	// 	const string& term = eq[i];
-	// 	for (size_t col = 0; col < term.size(); col++) {
-	// 		const char ch = term[col];
-	// 		if (!isspace(ch)) {
-	// 			const size_t digit = ch - '0';
-
-	// 		}
-	// 	}
-
-	// 	string t = trim(eq[i]);
-	// 	size_t value = stoul(trim(eq[i]));
-	// 	local = (op == '+') ? (local + value): (local * value);
-	// }
-
-	return local;
-}
-
 result_t part2(const data_t& data) {
-	result_t result = 0;
-	for (auto& eq : data) {
-		const auto local = solver_p2(eq);
-		result += local;
-	}
+	result_t result = accumulate(data.begin(), data.end(), 0ul, 
+		[](result_t a, const vector<string>& eq) {
+			return a + solve(transpose_eq(eq));
+		}
+	);
 
 	return result;
 }
