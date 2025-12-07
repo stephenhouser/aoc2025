@@ -33,7 +33,7 @@ const data_t read_data(const string& filename) {
 	return charmap_t::from_file(filename);
 }
 
-/* Part 1 */
+/* Part 1, count active splitters */
 result_t part1(const data_t& map) {
 	const point_t up(0, -1);
 	const point_t left(-1, 0);
@@ -42,10 +42,8 @@ result_t part1(const data_t& map) {
 	result_t active_splitters = 0;
 
 	for (point_t p : map.all_points('^')) {
-		// print("{}:{}: ", p, map.get(p));
 		p = p + up;
 		while (map.is_valid(p)) {
-			// print("up={}:{} ", p, map.get(p));
 			if (map.is_char(p, '^')) {
 				break;
 			}
@@ -55,7 +53,6 @@ result_t part1(const data_t& map) {
 				break;
 			}
 
-			// print("left={}:{}, right={}:{} ", p+left, map.get(p+left), p+right, map.get(p+right));
 			if (map.is_char(p + left, '^') || map.is_char(p + right, '^')) {
 				active_splitters += 1;
 				break;
@@ -63,15 +60,40 @@ result_t part1(const data_t& map) {
 
 			p = p + up;
 		}
-
-		// print("\n");
 	}
 
 	return active_splitters;
 }
 
-result_t part2([[maybe_unused]] const data_t& data) {
-	return 0;
+result_t part2(const data_t& map) {
+	vector<size_t> beams((size_t)map.size_x, 0ul);
+
+	for (size_t r = 0; r < (size_t)map.size_y; r++) {
+		vector<size_t> next((size_t)map.size_x, 0ul);
+		for (size_t c = 0; c < (size_t)map.size_x; c++) {
+			const char ch = map.get(c, r);
+			if (ch == 'S') {					// Start of a beam
+				next[c] = 1;
+			} else if (ch == '.') {				// no split, propagate only
+				next[c] = next[c] + beams[c];
+			} else if (0 < r) {					// split the beam
+				assert(ch == '^');
+				next[c] = 0;					// no beam on center
+				if (0 < c) {					// left split
+					next[c-1] = next[c-1] + beams[c];
+				}				
+				if (c < (size_t)map.size_x-1) {	// right split
+					next[c+1] = next[c+1] + beams[c];
+				}
+			}
+		}
+
+		swap(beams, next);
+	}
+
+	// count all the beams at the exit manifold
+	auto result = accumulate(beams.begin(), beams.end(), 0ul, std::plus());
+	return result;
 }
 
 int main(int argc, char* argv[]) {
