@@ -17,7 +17,7 @@ CXX = g++
 CXXFLAGS = -std=c++23
 LXXFLAGS =
 
-SUBDIRS := $(shell find . -mindepth 1 -maxdepth 1 -type d ! -name 'day.\*' -exec test -e '{}/Makefile' \; -print | sed 's|^./||')
+SUBDIRS := $(shell find . -mindepth 1 -maxdepth 1 -type d ! -name 'day.\*' -exec test -e '{}/Makefile' \; -print | sed 's|^./||' | sort)
 
 .PHONY: default all clean distclean $(SUBDIRS)
 
@@ -26,6 +26,7 @@ default: all
 all: $(SUBDIRS)
 
 $(SUBDIRS):
+	-@/usr/bin/echo -n $@:
 	@$(MAKE) -C $@ input
 
 # lint: $(SOURCES)
