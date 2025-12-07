@@ -43,13 +43,14 @@ result_t part1(const data_t& map) {
 
 	for (point_t p : map.all_points('^')) {
 		p = p + up;
+
 		while (map.is_valid(p)) {
-			if (map.is_char(p, '^')) {
+			if (map.is_char(p, 'S')) {
+				active_splitters += 1;
 				break;
 			}
 
-			if (map.is_char(p, 'S')) {
-				active_splitters += 1;
+			if (map.is_char(p, '^')) {
 				break;
 			}
 
@@ -70,21 +71,27 @@ result_t part2(const data_t& map) {
 
 	for (size_t r = 0; r < (size_t)map.size_y; r++) {
 		vector<size_t> next((size_t)map.size_x, 0ul);
+
 		for (size_t c = 0; c < (size_t)map.size_x; c++) {
 			const char ch = map.get(c, r);
-			if (ch == 'S') {					// Start of a beam
+
+			if (ch == 'S') {					// start of a beam
 				next[c] = 1;
-			} else if (ch == '.') {				// no split, propagate only
-				next[c] = next[c] + beams[c];
-			} else if (0 < r) {					// split the beam
-				assert(ch == '^');
-				next[c] = 0;					// no beam on center
+
+			} else if (ch == '^') {				// split the beam
+				next[c] = 0;					// no beam on center path
+
 				if (0 < c) {					// left split
 					next[c-1] = next[c-1] + beams[c];
 				}				
+
 				if (c < (size_t)map.size_x-1) {	// right split
 					next[c+1] = next[c+1] + beams[c];
 				}
+
+			} else {							// no split, propagate only
+				assert(ch == '.');
+				next[c] = next[c] + beams[c];
 			}
 		}
 

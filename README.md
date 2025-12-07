@@ -5,10 +5,10 @@
 | 1  | ⭐ | 🌟 | [Day 1: Secret Entrance](https://adventofcode.com/2025/day/1) |
 | 2  | ⭐ | 🌟 | [Day 2: Gift Shop](https://adventofcode.com/2025/day/2) |
 | 3  | ⭐ | 🌟 | [Day 3: Lobby](https://adventofcode.com/2025/day/3) |
-| 4  | ⭐ | 🌟 | [Day 4: Printing Department](https://adventofcode.com/2025/day/3) |
-| 5  | ⭐ | 🌟 | [Day 5: Cafeteria](https://adventofcode.com/2025/day/3) |
-| 6  |    |    |    |
-| 7  |    |    |    |
+| 4  | ⭐ | 🌟 | [Day 4: Printing Department](https://adventofcode.com/2025/day/4) |
+| 5  | ⭐ | 🌟 | [Day 5: Cafeteria](https://adventofcode.com/2025/day/5) |
+| 6  | ⭐ | 🌟 | [Day 6: Trash Compactor](https://adventofcode.com/2025/day/6) |
+| 7  | ⭐ | 🌟 | [Day 7: Laboratories](https://adventofcode.com/2025/day/7) |
 | 8  |    |    |    |
 | 9  |    |    |    |
 | 10 |    |    |    |
