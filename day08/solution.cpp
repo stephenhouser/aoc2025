@@ -1,4 +1,4 @@
-/* 2025 Advent of Code - Day 2
+/* 2025 Advent of Code - Day 8
  *
  * Stephen Houser <stephenhouser@gmail.com>
  * All rights reserved.
@@ -97,6 +97,8 @@ map<size_t, pair<point_t *, point_t *>> point_distances(const data_t &data) {
 
 /* Return vector of circuit sizes, sorted largest to smalleset. */
 vector<result_t> circuit_sizes(unordered_set<circuit_t *> circuits) {
+	// vector<circuit_t *> sizes(circuits.begin(), circuits.end());
+
 	vector<result_t> sizes(circuits.size());
 	for (auto circuit : circuits) {
 		sizes.push_back((*circuit).size());
@@ -147,10 +149,9 @@ result_t part1(const data_t& data) {
 
 	// based on test vs input data
 	int connections = data.size() > 20 ? 1000 : 10;
+
 	for (const auto [distance, points] : distance_map | views::take(connections)) {
-		// auto distance = dp.first;
 		auto [p1, p2] = points;
-		// print("{} and {}\n", *p1, *p2);
 		merge_circuits(circuits, p1, p2);		
 	}
 
