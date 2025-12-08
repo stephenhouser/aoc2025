@@ -23,10 +23,6 @@
 
 using namespace std;
 
-/*
-	shortest distance in w
-*/
-
 /* Update with data type and result types */
 using data_t = vector<point_t *>;
 using result_t = size_t;
@@ -95,10 +91,8 @@ map<size_t, pair<point_t *, point_t *>> point_distances(const data_t &data) {
 	return distance_map;
 }
 
-/* Return vector of circuit sizes, sorted largest to smalleset. */
+/* Return vector of circuit sizes, sorted largest to smallest. */
 vector<result_t> circuit_sizes(unordered_set<circuit_t *> circuits) {
-	// vector<circuit_t *> sizes(circuits.begin(), circuits.end());
-
 	vector<result_t> sizes(circuits.size());
 	for (auto circuit : circuits) {
 		sizes.push_back((*circuit).size());
@@ -108,6 +102,7 @@ vector<result_t> circuit_sizes(unordered_set<circuit_t *> circuits) {
 	return sizes;
 }
 
+/* Add one circuit to circuits for each point (junction box) in data set. */
 void add_circuits(const data_t& data, unordered_set<circuit_t *>& circuits) {
 	for (auto junction_box : data) {
 		circuit_t *circuit = new circuit_t();
@@ -116,7 +111,9 @@ void add_circuits(const data_t& data, unordered_set<circuit_t *>& circuits) {
 	}
 }
 
-/* Return the circuit (point set) that contains the point p, NULL otherwise */
+/* Return the circuit that contains the point p, NULL otherwise.
+ * Should never be null.
+ */
 circuit_t *find_circuit(unordered_set<circuit_t *>& circuits, point_t *p) {
 	for (circuit_t *c : circuits) {
 		if (c->contains(p)) {
@@ -128,7 +125,10 @@ circuit_t *find_circuit(unordered_set<circuit_t *>& circuits, point_t *p) {
 	return NULL;
 }
 
-/* merge the circuits with p1 and p2 */
+/* Merge the circuits with p1 and p2 into the circuit with p1.
+ * Remove the circuit that p2 was in.
+ * If they are in the same circuit, do nothing.
+ */
 void merge_circuits(unordered_set<circuit_t *>& circuits, point_t *p1, point_t *p2) {
 	circuit_t *c1 = find_circuit(circuits, p1);
 	circuit_t *c2 = find_circuit(circuits, p2);
@@ -147,7 +147,9 @@ result_t part1(const data_t& data) {
 	unordered_set<circuit_t *> circuits;
 	add_circuits(data, circuits);
 
-	// based on test vs input data
+	/* Number of connections to make before producing result. 
+	 * based on test (10 connections) vs input (1000 connections) data
+	 */
 	int connections = data.size() > 20 ? 1000 : 10;
 
 	for (const auto [distance, points] : distance_map | views::take(connections)) {
