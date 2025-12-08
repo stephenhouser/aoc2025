@@ -142,6 +142,8 @@ void merge_circuits(unordered_set<circuit_t *>& circuits, point_t *p1, point_t *
 }
 
 result_t part1(const data_t& data) {
+	// there should be 1,000 choose 2 = 499,500 pairs in this map
+	// for the input data (1,000 points)
 	auto distance_map = point_distances(data);
 
 	unordered_set<circuit_t *> circuits;

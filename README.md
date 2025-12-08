@@ -9,7 +9,7 @@
 | 5  | ⭐ | 🌟 | [Day 5: Cafeteria](https://adventofcode.com/2025/day/5) |
 | 6  | ⭐ | 🌟 | [Day 6: Trash Compactor](https://adventofcode.com/2025/day/6) |
 | 7  | ⭐ | 🌟 | [Day 7: Laboratories](https://adventofcode.com/2025/day/7) |
-| 8  |    |    |    |
+| 8  | ⭐ | 🌟 | [Day 8: Playground](https://adventofcode.com/2025/day/8) |
 | 9  |    |    |    |
 | 10 |    |    |    |
 | 11 |    |    |    |
