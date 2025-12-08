@@ -5,10 +5,10 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
-			"name": "day06 Launch",
+			"name": "day08 Launch",
 			"type": "cppdbg",
 			"request": "launch",
-			"program": "${workspaceFolder}/day06/solution",
+			"program": "${workspaceFolder}/day08/solution",
 			"args": ["test.txt"],
 			"stopAtEntry": false,
 			"cwd": "${fileDirname}",
