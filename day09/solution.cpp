@@ -16,9 +16,11 @@
 #include <string>  		// strings
 #include <vector>  		// collection
 #include <map>
+#include <set>
 
 #include "point.h"
 #include "vector.h"
+#include "sutherland-hodgeman.h"
 
 using namespace std;
 
@@ -90,6 +92,10 @@ struct rectangle_t {
 
 		return vec;
 	}
+
+	bool operator==(const rectangle_t& other) const {
+		return (p1 == other.p1 && p2 == other.p2);
+	}
 };
 
 vector<rectangle_t> all_rectangles(const data_t& data) {
@@ -125,12 +131,17 @@ void print_vec(const vector<point_t>& vec) {
 	}
 }
 
-// check if any polygon point is inside the box
-bool contains_box(const vector<point_t>& polygon, const rectangle_t& box) {
-	for (const point_t& p : polygon) {
-		if (box.is_inside(p)) {
+bool is_outside(const rectangle_t& r, const point_t& p) {
+	return p.x <= r.p1.x || r.p2.x <= p.x ||
+		   p.y <= r.p1.y || r.p2.y <= p.y;
+}
+
+bool sh_box_inside(const rectangle_t& box, const data_t& polygon) {
+	// if all red spots are outside or on line
+	for (const auto& p : polygon) {
+		if (!is_outside(box, p)) {
 			return false;
-		}
+		}	
 	}
 
 	return true;
@@ -138,6 +149,60 @@ bool contains_box(const vector<point_t>& polygon, const rectangle_t& box) {
 
 /* Part 2 */
 result_t part2(const data_t& data) {
+	result_t largest_area = 0;
+
+	for (const auto& box : all_rectangles(data)) {
+		auto area = (result_t)box.area();
+
+		// if (largest_area < area) {
+			print("{:4} {},{}: clip=", area, box.p1, box.p2);
+			if (sh_box_inside(box, data)) {
+				print("***");
+				largest_area = area;
+			}
+			print("\n");
+		// }		
+	}
+
+	return largest_area;
+	
+#if 0
+	for (const auto& box : all_rectangles(data)) {
+		auto area = (result_t)box.area();
+
+		if (largest_area < area /*|| area == 1537458069 */) {
+			// const auto clip = sutherland_hodgman(data, box.corners());
+			const auto clip = sutherland_hodgman(box.corners(), data);
+			print("{:4} {},{}: clip=", area, box.p1, box.p2);
+			print_vec(box.corners());
+
+			print(" result=");
+			print_vec(clip);
+
+			if (same_rectangle(clip, box) /*|| area ==  1537458069*/ ) {
+				print(" is same");
+				largest_area = area;
+			}
+			print("\n");
+			// if (is_rectangle(clip) || area == 1537458069) {
+			// 	const auto fix = to_rectangle(clip);
+			// 	print("{:4} {},{}: ", area, box.p1, box.p2);
+			// 	print_vec(clip);
+			// 	print(" is rectangle {},{}", fix.p1, fix.p2);
+
+			// 	if (fix == box) {
+			// 		largest_area = area;
+			// 		print(" ***");
+			// 	}
+			// }
+			// print("\n");
+		}
+	}
+
+	return largest_area;
+#endif
+
+#if 0
 	// generate all points on the polygon edges
 	vector<point_t> polygon;	
 	for (size_t i = 0; i < data.size(); i++) {
@@ -172,6 +237,7 @@ result_t part2(const data_t& data) {
 	}
 
 	return largest_area;
+#endif
 }
 
 int main(int argc, char* argv[]) {
