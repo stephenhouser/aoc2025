@@ -18,7 +18,6 @@
 #include <map>
 
 #include "point.h"
-#include "vector.h"
 
 using namespace std;
 
@@ -44,10 +43,6 @@ const data_t read_data(const string& filename) {
 
 	return data;
 }
-
-struct line_t : vector_t {
-	line_t(const point_t& a, const point_t& b) : vector_t(a, b) {}
-};
 
 struct rectangle_t {
 	point_t p1;
