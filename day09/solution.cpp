@@ -60,38 +60,27 @@ struct rectangle_t {
 		p2.y = max(a.y, b.y);
 	}
 
+	rectangle_t(const tuple<point_t, point_t>& tp) : p1(), p2() {
+		p1.x = min(get<0>(tp).x, get<1>(tp).x);
+		p1.y = min(get<0>(tp).y, get<1>(tp).y);
+		p2.x = max(get<0>(tp).x, get<1>(tp).x);
+		p2.y = max(get<0>(tp).y, get<1>(tp).y);
+	}
+
 	dimension_t area() const {
 		auto x = (p1.x < p2.x) ? (p2.x - p1.x) : (p1.x - p2.x);
 		auto y = (p1.y < p2.y) ? (p2.y - p1.y) : (p1.y - p2.y);
 		return (x+1) * (y+1);
 	}
 
-	bool is_inside(const point_t& p) const {
+	bool contains(const point_t& p) const {
 		return (p1.x < p.x && p.x < p2.x &&
 				p1.y < p.y && p.y < p2.y);
 	}
-
-	vector<point_t> corners() const {
-		vector<point_t> vec;
-		vec.push_back({p1.x, p1.y});
-		vec.push_back({p2.x, p1.y});
-		vec.push_back({p2.x, p2.y});
-		vec.push_back({p1.x, p2.y});
-		return vec;
-	}
-
-	vector<line_t> edges() const {
-		vector<line_t> vec;
-
-		auto corner_vec = corners();
-		for (size_t i = 0; i < corner_vec.size(); i++) {
-			vec.push_back({corner_vec[i], corner_vec[(i+1) % corner_vec.size()]});
-		}
-
-		return vec;
-	}
 };
 
+/* Returns a vector of all the rectangles formed by the vector of points
+ */
 vector<rectangle_t> all_rectangles(const data_t& data) {
 	vector<rectangle_t> rectangles;
 
@@ -107,71 +96,68 @@ vector<rectangle_t> all_rectangles(const data_t& data) {
 
 /* Part 1 */
 result_t part1(const data_t& data) {
-	result_t max_area = 0;
+	// All pairs of points to rectangles
+	const auto areas = views::cartesian_product(data, data)
+		| views::transform([](const auto& t) { return rectangle_t(t); })
+		| views::transform([](const rectangle_t& r) { return r.area(); });
 
-	for (const auto& box : all_rectangles(data)) {
-		auto area = (result_t)box.area();
-		if (max_area < area) {
-			max_area = area;
+	// Get the largest area rectangle
+	return (result_t)ranges::max(areas);
+}
+
+/* Returns the midpoint of the line described by p1 and p2. */
+point_t midpoint(const point_t& p1, const point_t& p2) {
+	const auto p = p1 + p2;
+	return {p.x/2, p.y/2};
+}
+
+/* Returns true if the rectangle is inside the polygon described by
+ * the vector of points. False otherwise.
+ */
+bool enclosed_rectangle(const rectangle_t& r, const data_t& polygon) {
+	for (size_t i = 0; i < polygon.size(); i++) {
+		const point_t& p1 = polygon[i];
+
+		// check starting point of line
+		if (r.contains(p1)) {
+			return false;
 		}
-	}
 
-	return max_area;
-}
-
-void print_vec(const vector<point_t>& vec) {
-	for (const auto& p : vec) {
-		print("{} ", p);
-	}
-}
-
-// check if any polygon point is inside the box
-bool contains_box(const vector<point_t>& polygon, const rectangle_t& box) {
-	for (const point_t& p : polygon) {
-		if (box.is_inside(p)) {
+		// check mid-point of line
+		const point_t& p2 = polygon[(i+1) % polygon.size()];
+		const point_t p(midpoint(p1, p2));
+		if (r.contains(p)) {
 			return false;
 		}
 	}
 
+	// all points of polygon were outside the rectangle
+	// and no lines of the polygon intersected it
 	return true;
 }
 
 /* Part 2 */
 result_t part2(const data_t& data) {
-	// generate all points on the polygon edges
-	vector<point_t> polygon;	
-	for (size_t i = 0; i < data.size(); i++) {
-		const point_t& a1 = data[i];
-		const point_t& a2 = data[(i+1) % data.size()];
+	// All pairs of points to rectangles
 
-		if (a1.y == a2.y) {
-			auto mn = min(a1.x, a2.x);
-			auto mx = max(a1.x, a2.x);
-			for (dimension_t x = mn; x <= mx; x++) {
-				polygon.push_back({x, a1.y});
-			}
-		} else {
-			auto mn = min(a1.y, a2.y);
-			auto mx = max(a1.y, a2.y);
-			for (dimension_t y = mn; y <= mx; y++) {
-				polygon.push_back({a1.x, y});
-			}
-		}
-	}
+	// Cannot seem to get the filter() working correctly.
+	// const auto areas = views::cartesian_product(data, data)
+	// 	| views::transform([](const auto& t) { return rectangle_t(t); })
+	// 	| views::filter([&data](const rectangle_t& r) {
+	// 			return enclosed_rectangle(r, data);
+	// 		})
+	// 	| views::transform([&data](const rectangle_t& r) { 
+	// 			return r.area(); 
+	// 		});
 
-	result_t largest_area = 0;
-
-	for (const auto& box : all_rectangles(data)) {
-		auto area = (result_t)box.area();
-
-		if (largest_area < area) {
-			if (contains_box(polygon, box)) {
-				largest_area = area;
-			}
-		}
-	}
-
-	return largest_area;
+	const auto areas = views::cartesian_product(data, data)
+		| views::transform([](const auto& t) { return rectangle_t(t); })
+		| views::transform([&data](const rectangle_t& r) { 
+			return enclosed_rectangle(r, data) ? r.area() : 0; 
+		});
+		
+	// Get the largest area rectangle
+	return (result_t)ranges::max(areas);
 }
 
 int main(int argc, char* argv[]) {
