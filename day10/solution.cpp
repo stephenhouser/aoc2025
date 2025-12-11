@@ -38,8 +38,10 @@ using result_t = size_t;
 
 size_t parse_display(const string& s) {
 	size_t display = 0x00;
-	for (auto it = s.rbegin(); it != s.rend(); it++) {
+
+	for (auto it = s.begin(); it != s.end(); it++) {
 		const char c = *it;
+
 		if (c == '.') {
 			display = display << 1 | 0x00;
 		} else if (c == '#') {
@@ -50,10 +52,11 @@ size_t parse_display(const string& s) {
 	return display;
 }
 
-size_t parse_button(const string& s, [[maybe_unused]]size_t display_size) {
+size_t parse_button(const string& s, const size_t display_size) {
 	size_t button = 0x00;
+
 	for (const auto pos : split_size_t(s, "(),")) {
-		button |= (0x01 << pos);
+		button |= 0x01 << ((display_size - 1) - pos);
 	}
 
 	return button;
@@ -71,12 +74,14 @@ const data_t read_data(const string& filename) {
 			auto parts = split(line, " ");
 			assert(parts.size() >= 3);
 
+			size_t display_size = parts[0].size() - 2;	// ignore []
 			size_t display = parse_display(parts[0]);
+
 			vector<size_t> buttons;
 			for (size_t i = 1; i < parts.size()-1; i++) {
-				auto button = parse_button(parts[i], parts[0].size());
-				// print("{} button={:08b}\n", parts[i], button);
+				auto button = parse_button(parts[i], display_size);
 				buttons.emplace_back(button);
+				// print("{} button={:08b} {}\n", parts[i], button, display_size);
 			}
 
 			vector<size_t> requirements = split_size_t(parts[parts.size()-1], "{},");
@@ -143,7 +148,7 @@ vector<vector<size_t>> make_matrix(const vector<size_t>& buttons, size_t size) {
 			row.push_back((button >> (bit -1)) & 0x01);
 		}
 
-		reverse(row.begin(), row.end());
+		// reverse(row.begin(), row.end());
 		A.push_back(row);
 	}
 
