@@ -50,7 +50,7 @@ size_t parse_display(const string& s) {
 	return display;
 }
 
-size_t parse_button(const string& s) {
+size_t parse_button(const string& s, [[maybe_unused]]size_t display_size) {
 	size_t button = 0x00;
 	for (const auto pos : split_size_t(s, "(),")) {
 		button |= (0x01 << pos);
@@ -74,7 +74,9 @@ const data_t read_data(const string& filename) {
 			size_t display = parse_display(parts[0]);
 			vector<size_t> buttons;
 			for (size_t i = 1; i < parts.size()-1; i++) {
-				buttons.emplace_back(parse_button(parts[i]));
+				auto button = parse_button(parts[i], parts[0].size());
+				// print("{} button={:08b}\n", parts[i], button);
+				buttons.emplace_back(button);
 			}
 
 			vector<size_t> requirements = split_size_t(parts[parts.size()-1], "{},");
@@ -102,7 +104,6 @@ set<set<size_t>> powerset(const vector<size_t>& src) {
 
 /* Part 1 */
 result_t part1(const data_t& data) {
-
 	result_t result = 0;
 
 	for (const auto& machine : data) {
@@ -133,7 +134,44 @@ result_t part1(const data_t& data) {
 	return result;
 }
 
+vector<vector<size_t>> make_matrix(const vector<size_t>& buttons, size_t size) {
+	vector<vector<size_t>> A;
+
+	for (const auto& button : buttons) {
+		vector<size_t> row;
+		for (size_t bit = size; bit > 0; bit--) {
+			row.push_back((button >> (bit -1)) & 0x01);
+		}
+
+		reverse(row.begin(), row.end());
+		A.push_back(row);
+	}
+
+	return A;
+}
+
 result_t part2([[maybe_unused]] const data_t& data) {
+	// Ax = b; A are the button x result matrix (1 or 0) b is the joltages
+
+	for (const auto& machine : data) {
+		const auto& b = machine.requirements;
+		const auto& A = make_matrix(machine.buttons, b.size());
+
+		print("Machine: {}\n", b);
+
+		size_t r = 0;
+		for (const auto& row : A) {
+			print("{:08b} [", machine.buttons[r++]);
+
+			for (const auto i : row) {
+				print("{} ", i);
+			}
+			print("]\n");
+		}
+
+	}
+
+	
 	return 0;
 }
 
