@@ -7,8 +7,13 @@
 #include <vector>	 // std::vector
 
 extern std::vector<std::string> split(const std::string& str, const std::string& delims = ", =;");
+
 extern std::vector<int> split_int(const std::string& str, const std::string& delims = ", =;");
+extern auto split_int_range(const std::string& str, const std::string& delims = ", =;");
+
 extern std::vector<size_t> split_size_t(const std::string& str, const std::string& delims = ", =;");
+extern auto split_uint_range(const std::string& str, const std::string& delims = ", =;");
+
 extern std::vector<float> split_float(const std::string& str, const std::string& delims = ", =;");
 
 template <typename T>

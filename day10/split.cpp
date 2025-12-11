@@ -46,6 +46,12 @@ std::vector<int> split_int(const std::string& str, const std::string& delims) {
 	return numbers;
 }
 
+auto split_int_range(const std::string& str, const std::string& delims) {
+	return split(str, delims) 
+		| std::views::filter([](const std::string& s) { return isdigit(s[0]) || s[0] == '-'; })
+		| std::views::transform([](const std::string& s) { return std::stoi(s); });
+}
+
 std::vector<size_t> split_size_t(const std::string& str, const std::string& delims) {
 	std::vector<size_t> numbers;
 
@@ -58,31 +64,10 @@ std::vector<size_t> split_size_t(const std::string& str, const std::string& deli
 	return numbers;
 }
 
-std::vector<int> split_int_2(const std::string& str, const std::string& delims) {
-	std::vector<int> numbers;
-
-	auto strings = split(str, delims);
-	std::for_each(strings.begin(), strings.end(), [&numbers](const std::string& s) {
-		if (isdigit(s[0]) || s[0] == '-') {
-			numbers.push_back(std::stoi(s));
-		}
-	});
-
-	return numbers;
-}
-
-std::vector<int> split_int_3(const std::string& str, const std::string& delims) {
-	auto strings = split(str, delims);
-	auto numbers = strings |
-				   std::views::filter([](const std::string& s) {
-					   return isdigit(s[0]) || s[0] == '-';
-				   }) |
-				   std::views::transform([](const std::string& s) {
-					   return std::stoi(s);
-				   }) |
-				   std::ranges::to<std::vector<int>>();
-
-	return numbers;
+auto split_uint_range(const std::string& str, const std::string& delims) {
+	return split(str, delims) 
+		| std::views::filter([](const std::string& s) { return isdigit(s[0]); })
+		| std::views::transform([](const std::string& s) { return std::stoul(s); });
 }
 
 void test_split() {
