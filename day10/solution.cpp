@@ -15,6 +15,8 @@
 #include <ranges>  		// ranges and views
 #include <string>  		// strings
 #include <vector>  		// collection
+#include <climits>
+#include <set>
 
 #include "mrf.h"	// map, reduce, filter templates
 #include "split.h"	// split strings
@@ -22,11 +24,40 @@
 using namespace std;
 
 /* Update with data type and result types */
-using data_t = vector<string>;
-using result_t = size_t;
+struct machine_t {
+	size_t display;
+	vector<size_t> buttons;
+	vector<size_t> requirements;
+};
+
+using data_t = vector<machine_t>;
 
 /* for pretty printing durations */
 using duration_t = chrono::duration<double, milli>;
+using result_t = size_t;
+
+size_t parse_display(const string& s) {
+	size_t display = 0x00;
+	for (auto it = s.rbegin(); it != s.rend(); it++) {
+		const char c = *it;
+		if (c == '.') {
+			display = display << 1 | 0x00;
+		} else if (c == '#') {
+			display = display << 1 | 0x01;
+		}
+	}
+
+	return display;
+}
+
+size_t parse_button(const string& s) {
+	size_t button = 0x00;
+	for (const auto pos : split_size_t(s, "(),")) {
+		button |= (0x01 << pos);
+	}
+
+	return button;
+}
 
 /* Read the data file... */
 const data_t read_data(const string& filename) {
@@ -37,16 +68,69 @@ const data_t read_data(const string& filename) {
 	string line;
 	while (getline(ifs, line)) {
 		if (!line.empty()) {
-			data.push_back(line);
+			auto parts = split(line, " ");
+			assert(parts.size() >= 3);
+
+			size_t display = parse_display(parts[0]);
+			vector<size_t> buttons;
+			for (size_t i = 1; i < parts.size()-1; i++) {
+				buttons.emplace_back(parse_button(parts[i]));
+			}
+
+			vector<size_t> requirements = split_size_t(parts[parts.size()-1], "{},");
+			data.push_back({display, buttons, requirements});
 		}
 	}
 
 	return data;
 }
 
+set<set<size_t>> powerset(const vector<size_t>& src) {
+	set<set<size_t>> pow;
+
+	for (const auto i : src) {
+		for (const auto& s : pow) {
+			set<size_t> ss(s.begin(), s.end());
+			ss.insert(i);
+			pow.insert(ss);
+		}
+		pow.insert({i});
+	}
+
+	return pow;
+}
+
 /* Part 1 */
 result_t part1(const data_t& data) {
-	return data.size();
+
+	result_t result = 0;
+
+	for (const auto& machine : data) {
+		result_t local_min = LONG_MAX;
+
+		// try every possible combination of single button presses
+		// e.g. the powerset of buttons
+		for (const auto& s : powerset(machine.buttons)) {
+			size_t display = 0x00;
+
+			// only try if the size of the set is smaller than our current min
+			if (s.size() < local_min) {
+				// each button is an xor
+				for (const auto i : s) {
+					display ^= i;
+				}
+
+				// if the result is the same as the display, save as new min
+				if (display == machine.display) {
+					local_min = s.size();
+				}
+			}
+		}
+
+		result += local_min;
+	}
+
+	return result;
 }
 
 result_t part2([[maybe_unused]] const data_t& data) {
