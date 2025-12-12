@@ -21,11 +21,14 @@
 #include "mrf.h"	// map, reduce, filter templates
 #include "split.h"	// split strings
 
+#include "minsolver.h"
+
 using namespace std;
 
 /* Update with data type and result types */
 struct machine_t {
 	size_t display;
+	size_t display_size;
 	vector<size_t> buttons;
 	vector<size_t> requirements;
 };
@@ -85,7 +88,7 @@ const data_t read_data(const string& filename) {
 			}
 
 			vector<size_t> requirements = split_size_t(parts[parts.size()-1], "{},");
-			data.push_back({display, buttons, requirements});
+			data.push_back({display, display_size, buttons, requirements});
 		}
 	}
 
@@ -155,29 +158,69 @@ vector<vector<size_t>> make_matrix(const vector<size_t>& buttons, size_t size) {
 	return A;
 }
 
+
+vector<vector<size_t>> make_matrix_x(const vector<size_t>& buttons, size_t size) {
+	vector<vector<size_t>> A(size);
+
+	for (size_t bit = 0; bit < size; bit++) {
+		for (const auto& button : buttons) {
+			size_t b = (button >> (size - 1 - bit)) & 0x01;
+			A[bit].push_back(b);
+		}
+	}
+
+	return A;
+}
+
+size_t mmax(const vector<size_t>& vec) {
+	return *(max_element(vec.begin(), vec.end()));
+}
+
 result_t part2([[maybe_unused]] const data_t& data) {
 	// Ax = b; A are the button x result matrix (1 or 0) b is the joltages
+	result_t result = 0;
 
 	for (const auto& machine : data) {
+		const auto& buttons = machine.buttons;
+		const auto display_size = machine.display_size;
+
 		const auto& b = machine.requirements;
-		const auto& A = make_matrix(machine.buttons, b.size());
+		const vector<vector<size_t>> A = make_matrix_x(buttons, display_size);
 
 		print("Machine: {}\n", b);
-
-		size_t r = 0;
-		for (const auto& row : A) {
-			print("{:08b} [", machine.buttons[r++]);
-
-			for (const auto i : row) {
-				print("{} ", i);
+		for (const auto& v : A) {
+			print("[ ");
+			for (const auto& n : v) {
+				print("{} ", n);
 			}
 			print("]\n");
 		}
 
-	}
+		print("\n");
 
+		int upper_bound = (int)mmax(b);
+		auto solutions = IntegerLinearSolver::findAllIntegerSolutions(A, b, upper_bound);
+
+		auto sums = solutions
+					| views::transform([](const auto& v) {
+						return accumulate(v.begin(), v.end(), 0ul, plus());
+					});
+		auto min_sum = *(min_element(sums.begin(), sums.end()));
+		result += min_sum;
+
+		std::cout << "Found " << solutions.size() << " integer solutions:" << std::endl;
+		for (size_t i = 0; i < std::min(solutions.size(), size_t(10)); i++) {
+			int sum = std::accumulate(solutions[i].begin(), solutions[i].end(), 0);
+			std::cout << "Solution " << i+1 << " (sum=" << sum << "): ";
+			for (int val : solutions[i]) {
+				std::cout << val << " ";
+			}
+			std::cout << std::endl;
+		}
+		std::cout << std::endl;
+	}
 	
-	return 0;
+	return result;
 }
 
 int main(int argc, char* argv[]) {
