@@ -24,17 +24,19 @@ OBJECTS = $(patsubst %.cpp, %.o, $(wildcard *.cpp)) \
 endif
 
 # C Preprocessor flags (for c and c++ code)
-CPPFLAGS = -O3 -Wall -Weffc++ -Wextra -Wconversion -Wsign-conversion -Werror -Wpedantic
+# Z3 violates a ton of these in their header files. Turn them off, just this one time...
+#CPPFLAGS = -O3 -Wall -Weffc++ -Wextra -Wconversion -Wsign-conversion -Werror -Wpedantic
+CPPFLAGS = -O3 -Wall -I./z3/src/api -I./z3/src/api/c++
 
 # C specific flags
 CC = gcc
-CFLAGS = -std=c23
-LFLAGS =
+CFLAGS = -std=c23 -I./z3/src/api -I./z3/src/api/c++
+LFLAGS = -Lz3/build -lz3
 
 # C++ specific flags
 CXX = g++
-CXXFLAGS = -std=c++23
-LXXFLAGS =
+CXXFLAGS = -std=c++23 -I./z3/src/api -I./z3/src/api/c++
+LXXFLAGS = -Lz3/build -lz3
 
 .PHONY: default all clean distclean
 
@@ -42,6 +44,14 @@ LXXFLAGS =
 default: test
 
 all: default
+
+z3:
+	echo "Clone and build z3..."
+	git clone https://github.com/Z3Prover/z3.git
+	cd z3
+	python scripts/mk_make.py
+	cd build
+	make
 
 info:
 	@echo SOURCES= $(SOURCES)
@@ -68,15 +78,15 @@ lint: $(SOURCES)
 	clang-tidy $(SOURCES)
 
 test: $(TARGET)
-	@-./$(TARGET) -v test.txt || true
+	@-LD_LIBRARY_PATH=./z3/build ./$(TARGET) -v test.txt || true
 
 input: $(TARGET)
-	@-./$(TARGET) input.txt || true
+	@-LD_LIBRARY_PATH=./z3/build ./$(TARGET) input.txt || true
 
 summary: $(TARGET)
 	@-head -1 README.md
-	@-./$(TARGET) test.txt || true
-	@-./$(TARGET) input.txt || true
+	@-LD_LIBRARY_PATH=./z3/build ./$(TARGET) test.txt || true
+	@-LD_LIBRARY_PATH=./z3/build ./$(TARGET) input.txt || true
 
 clean:
 	-rm -f *.o

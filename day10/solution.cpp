@@ -21,11 +21,14 @@
 #include "mrf.h"	// map, reduce, filter templates
 #include "split.h"	// split strings
 
+#include "z3-solver.h"
+
 using namespace std;
 
 /* Update with data type and result types */
 struct machine_t {
 	size_t display;
+	size_t display_size;
 	vector<size_t> buttons;
 	vector<size_t> requirements;
 };
@@ -74,8 +77,8 @@ const data_t read_data(const string& filename) {
 			auto parts = split(line, " ");
 			assert(parts.size() >= 3);
 
-			size_t display_size = parts[0].size() - 2;	// ignore []
 			size_t display = parse_display(parts[0]);
+			size_t display_size = parts[0].size() - 2;	// ignore []
 
 			vector<size_t> buttons;
 			for (size_t i = 1; i < parts.size()-1; i++) {
@@ -85,7 +88,7 @@ const data_t read_data(const string& filename) {
 			}
 
 			vector<size_t> requirements = split_size_t(parts[parts.size()-1], "{},");
-			data.push_back({display, buttons, requirements});
+			data.push_back({display, display_size, buttons, requirements});
 		}
 	}
 
@@ -140,44 +143,58 @@ result_t part1(const data_t& data) {
 }
 
 vector<vector<size_t>> make_matrix(const vector<size_t>& buttons, size_t size) {
-	vector<vector<size_t>> A;
+	vector<vector<size_t>> A(size);
 
-	for (const auto& button : buttons) {
-		vector<size_t> row;
-		for (size_t bit = size; bit > 0; bit--) {
-			row.push_back((button >> (bit -1)) & 0x01);
+	for (size_t bit = 0; bit < size; bit++) {
+		for (const auto& button : buttons) {
+			size_t b = (button >> (size - 1 - bit)) & 0x01;
+			A[bit].push_back(b);
 		}
-
-		// reverse(row.begin(), row.end());
-		A.push_back(row);
 	}
 
 	return A;
 }
 
+void print_matrix(const vector<vector<size_t>>& A, const vector<size_t>& b) {
+	print("A=");
+	for (size_t x = 0; x < A.size(); x++) {
+		const auto&v = A[x];
+
+		print("\t[ ");
+		for (const auto& n : v) {
+			print("{:3} ", n);
+		}
+		print("] [ {:3} ]\n", b[x]);
+	}
+}
+
 result_t part2([[maybe_unused]] const data_t& data) {
 	// Ax = b; A are the button x result matrix (1 or 0) b is the joltages
+	result_t result = 0;
 
 	for (const auto& machine : data) {
+		const auto& buttons = machine.buttons;
+		const auto display_size = machine.display_size;
+
 		const auto& b = machine.requirements;
-		const auto& A = make_matrix(machine.buttons, b.size());
+		const vector<vector<size_t>> A = make_matrix(buttons, display_size);
 
-		print("Machine: {}\n", b);
+		print_matrix(A, b);
 
-		size_t r = 0;
-		for (const auto& row : A) {
-			print("{:08b} [", machine.buttons[r++]);
+		// Find optimal solution
+		auto solution = z3_solve_min_sum(A, b);
+		if (solution.hasSolution) {
+			print("x=\t[ ");
+            for (size_t i = 0; i < solution.x.size(); i++) {
+                print("{:3} ", solution.x[i]);
+            }
+			print("] [ {:3} ]\n\n", solution.objectiveValue);
 
-			for (const auto i : row) {
-				print("{} ", i);
-			}
-			print("]\n");
+			result += (result_t)solution.objectiveValue;
 		}
-
 	}
-
 	
-	return 0;
+	return result;
 }
 
 int main(int argc, char* argv[]) {
