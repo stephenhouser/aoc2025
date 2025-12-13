@@ -13,12 +13,15 @@ z3_solution z3_solve_min_sum(const std::vector<std::vector<size_t>>& A,
 	// Create Z3 context
 	z3::context ctx;
 	z3::optimize opt(ctx);
-	
+	// parallel is not any faster...
+	// z3::set_param("parallel.enable", true);
+	// z3::set_param("parallel.threads.max", 16);
+
 	// Create integer variables x[0], x[1], ..., x[n-1]
 	std::vector<z3::expr> x;
 	for (size_t i = 0; i < n; i++) {
-		std::string varName = "x" + std::to_string(i);
-		x.push_back(ctx.int_const(varName.c_str()));
+		std::string name = "x" + std::to_string(i);
+		x.push_back(ctx.int_const(name.c_str()));
 		
 		// Add non-negativity constraint
 		opt.add(x[i] >= 0);
@@ -43,19 +46,20 @@ z3_solution z3_solve_min_sum(const std::vector<std::vector<size_t>>& A,
 	opt.minimize(objective);
 	
 	// Solve
-	z3::check_result checkResult = opt.check();
+	z3::check_result check_result = opt.check();
 	
-	if (checkResult == z3::sat) {
-		result.hasSolution = true;
+	if (check_result == z3::sat) {
+		result.has_solution = true;
 		
 		z3::model model = opt.get_model();
 		result.x.resize(n);
-		result.objectiveValue = 0;
-		
+
+		// accumulate result from solution
+		result.value = 0;
 		for (size_t i = 0; i < n; i++) {
 			z3::expr val = model.eval(x[i]);
 			result.x[i] = val.get_numeral_int();
-			result.objectiveValue += result.x[i];
+			result.value += result.x[i];
 		}
 	}
 	
@@ -65,7 +69,7 @@ z3_solution z3_solve_min_sum(const std::vector<std::vector<size_t>>& A,
 // Find multiple solutions
 std::vector<z3_solution> z3_solve(const std::vector<std::vector<size_t>>& A, 
 									const std::vector<size_t>& b, 
-									int maxSolutions) {
+									int max_solutions) {
 	std::vector<z3_solution> solutions;
 	
 	size_t m = A.size();
@@ -77,8 +81,8 @@ std::vector<z3_solution> z3_solve(const std::vector<std::vector<size_t>>& A,
 	// Create variables
 	std::vector<z3::expr> x;
 	for (size_t i = 0; i < n; i++) {
-		std::string varName = "x" + std::to_string(i);
-		x.push_back(ctx.int_const(varName.c_str()));
+		std::string name = "x" + std::to_string(i);
+		x.push_back(ctx.int_const(name.c_str()));
 		solver.add(x[i] >= 0);
 	}
 	
@@ -95,37 +99,37 @@ std::vector<z3_solution> z3_solve(const std::vector<std::vector<size_t>>& A,
 	
 	// Find multiple solutions
 	int count = 0;
-	while (count < maxSolutions && solver.check() == z3::sat) {
+	while (count < max_solutions && solver.check() == z3::sat) {
 		z3_solution sol;
-		sol.hasSolution = true;
+		sol.has_solution = true;
 		
 		z3::model model = solver.get_model();
 		sol.x.resize(n);
-		sol.objectiveValue = 0;
 		
 		// Extract solution
-		z3::expr_vector blockingClause(ctx);
+		z3::expr_vector blocking_clause(ctx);
+
+		sol.value = 0;
 		for (size_t i = 0; i < n; i++) {
 			z3::expr val = model.eval(x[i]);
 			sol.x[i] = val.get_numeral_int();
-			sol.objectiveValue += sol.x[i];
+			sol.value += sol.x[i];
 			
 			// Create blocking clause to find different solutions
-			blockingClause.push_back(x[i] != val);
+			blocking_clause.push_back(x[i] != val);
 		}
 		
 		solutions.push_back(sol);
 		
 		// Add blocking clause to prevent finding the same solution again
-		solver.add(z3::mk_or(blockingClause));
+		solver.add(z3::mk_or(blocking_clause));
 		count++;
 	}
 	
 	// Sort by objective value
-	std::sort(solutions.begin(), solutions.end(), 
-				[](const z3_solution& a, const z3_solution& b) {
-					return a.objectiveValue < b.objectiveValue;
-				});
+	std::sort(solutions.begin(), solutions.end(), [](const auto& a, const auto& b) {
+			return a.value < b.value;
+		});
 	
 	return solutions;
 }

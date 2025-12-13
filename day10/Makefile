@@ -48,10 +48,8 @@ all: default
 z3:
 	echo "Clone and build z3..."
 	git clone https://github.com/Z3Prover/z3.git
-	cd z3
-	python scripts/mk_make.py
-	cd build
-	make
+	(cd z3; python scripts/mk_make.py)
+	make -C z3/build -j 8
 
 info:
 	@echo SOURCES= $(SOURCES)

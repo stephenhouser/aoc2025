@@ -18,7 +18,6 @@
 #include <climits>
 #include <set>
 
-#include "mrf.h"	// map, reduce, filter templates
 #include "split.h"	// split strings
 
 #include "z3-solver.h"
@@ -179,18 +178,18 @@ result_t part2([[maybe_unused]] const data_t& data) {
 		const auto& b = machine.requirements;
 		const vector<vector<size_t>> A = make_matrix(buttons, display_size);
 
-		print_matrix(A, b);
+		// print_matrix(A, b);
 
 		// Find optimal solution
 		auto solution = z3_solve_min_sum(A, b);
-		if (solution.hasSolution) {
-			print("x=\t[ ");
-            for (size_t i = 0; i < solution.x.size(); i++) {
-                print("{:3} ", solution.x[i]);
-            }
-			print("] [ {:3} ]\n\n", solution.objectiveValue);
+		if (solution.has_solution) {
+			// print("x=\t[ ");
+            // for (size_t i = 0; i < solution.x.size(); i++) {
+            //     print("{:3} ", solution.x[i]);
+            // }
+			// print("] [ {:3} ]\n\n", solution.value);
 
-			result += (result_t)solution.objectiveValue;
+			result += (result_t)solution.value;
 		}
 	}
 	

@@ -4,8 +4,8 @@
 
 struct z3_solution {
 	std::vector<int> x;
-	int objectiveValue;
-	bool hasSolution = false;
+	bool has_solution = false;
+	int value;
 };
 
 extern z3_solution z3_solve_min_sum(const std::vector<std::vector<size_t>>& A, 
@@ -15,4 +15,4 @@ extern z3_solution z3_solve_min_sum(const std::vector<std::vector<size_t>>& A,
 // Find multiple solutions
 extern std::vector<z3_solution> z3_solve(const std::vector<std::vector<size_t>>& A, 
 											const std::vector<size_t>& b, 
-											int maxSolutions = 10);
+											int max_solutions = 10);
