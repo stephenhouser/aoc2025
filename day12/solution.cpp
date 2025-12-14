@@ -128,8 +128,6 @@ result_t part1(const data_t& data) {
 	const auto& packages = data.first;
 	const auto& spaces = data.second;
 
-
-
 	auto ok_spaces = ranges::count_if(spaces, [&packages](const space_t& space) {
 			return space.area() >= space.needed_area(packages);
 		});
