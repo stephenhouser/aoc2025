@@ -1,5 +1,7 @@
 # Day 9: Movie Theater
 
+Geometry, Intersecting Lines, Point in Polygon
+
 ## Part 1
 
 Get the list of all pairs of points and make rectangles from them, choose the

@@ -10,10 +10,10 @@
 | 6  | ⭐ | 🌟 | [Day 6: Trash Compactor](https://adventofcode.com/2025/day/6) |
 | 7  | ⭐ | 🌟 | [Day 7: Laboratories](https://adventofcode.com/2025/day/7) |
 | 8  | ⭐ | 🌟 | [Day 8: Playground](https://adventofcode.com/2025/day/8) |
-| 9  |    |    |    |
-| 10 |    |    |    |
-| 11 |    |    |    |
-| 12 |    |    |    |
+| 9  | ⭐ | 🌟 | [Day 9: Movie Theater](https://adventofcode.com/2025/day/9) |
+| 10 | ⭐ | 🌟 | [Day 10: Factory](https://adventofcode.com/2025/day/10) |
+| 11 | ⭐ | 🌟 | [Day 11: Reactor](https://adventofcode.com/2025/day/11) |
+| 12 |    |    | [Day 12: Christmas Tree Farm](https://adventofcode.com/2025/day/12) |
 
 Contains my solutions to the [Advent of Code 2025](https://adventofcode.com/2025).
 
@@ -23,6 +23,8 @@ Tools:
 - Visual Studio Code
 - macOS / Linux (primary)
 - git
+
+- [z3]() for Day 10, because it sucked otherwise.
 
 ## Running
 

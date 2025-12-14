@@ -5,11 +5,11 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
-			"name": "day09 Launch",
+			"name": "day11 Launch",
 			"type": "cppdbg",
 			"request": "launch",
-			"program": "${workspaceFolder}/day09/solution",
-			"args": ["test.txt"],
+			"program": "${workspaceFolder}/day11/solution",
+			"args": ["test-2.txt"],
 			"stopAtEntry": false,
 			"cwd": "${fileDirname}",
 			"environment": [],

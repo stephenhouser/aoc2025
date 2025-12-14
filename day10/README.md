@@ -1,5 +1,7 @@
 # Day 10: Factory
 
+Solving Set of Linear Equations.
+
 ## Part 1
 
 This really looks like solving a system of linear equations.
@@ -13,6 +15,8 @@ This really looks like solving a system of linear equations.
 Use set of all subsets (the power set) and see which one solves.
 
 ## Part 2
+
+Solving set of linear eqaequationsutions.
 
 ```
        x0  x1  x2  x3  x4  x5     b
