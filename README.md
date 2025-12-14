@@ -13,7 +13,7 @@
 | 9  | ⭐ | 🌟 | [Day 9: Movie Theater](https://adventofcode.com/2025/day/9) |
 | 10 | ⭐ | 🌟 | [Day 10: Factory](https://adventofcode.com/2025/day/10) |
 | 11 | ⭐ | 🌟 | [Day 11: Reactor](https://adventofcode.com/2025/day/11) |
-| 12 |    |    | [Day 12: Christmas Tree Farm](https://adventofcode.com/2025/day/12) |
+| 12 | ⭐ | 🌟 | [Day 12: Christmas Tree Farm](https://adventofcode.com/2025/day/12) |
 
 Contains my solutions to the [Advent of Code 2025](https://adventofcode.com/2025).
 
@@ -24,7 +24,7 @@ Tools:
 - macOS / Linux (primary)
 - git
 
-- [z3]() for Day 10, because it sucked otherwise.
+- [z3](https://github.com/Z3Prover/z3) for Day 10, because it sucked otherwise.
 
 ## Running
 
